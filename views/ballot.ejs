@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      let token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+      function deleteQuestion(id) {
+        fetch(`/questions/${id}`, {
+          method: "delete",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+          _csrf: token
+        }),
+        })
+          .then((res) => {
+            if (res.ok) {
+              window.location.reload();
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    </script>
+    <title>Election Ballot</title>
+  </head>
+  <body>
+    <div
+      class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 font-sans text-2xl shadow-md"
+    >
+      <div class="flex flex-row justify-between pr-4">
+        <h1 class="w-3/5 p-5 text-white"><%= election.title %></h1>
+        <div class="flex flex-row justify-end">
+          <div class="hover:bg-white/20 cursor-pointer flex items-center">
+            <a href="/elections" class="text-white px-2">
+              All Elections
+            </a>
+          </div>
+          <div class="hover:bg-white/20 cursor-pointer flex items-center">
+            <a href="/logout" class="text-white px-2">
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-row justify-end my-4">
+      <div
+        class="flex flex-row flex-nowrap rounded bg-pink-400 hover:bg-pink-500 p-2 mt-4 mr-4 text-white shadow-md cursor-pointer"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clip-path="url(#clip0_6_8865)">
+            <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white" />
+          </g>
+          <defs>
+            <clipPath id="clip0_6_8865">
+              <rect width="24" height="24" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+        <a href="/questions/add/<%= election.id %>"> Add Question </a>
+      </div>
+      <div
+        class="flex flex-row flex-nowrap rounded bg-pink-400 hover:bg-pink-500 p-2 mt-4 mr-4 text-white shadow-md cursor-pointer"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clip-path="url(#clip0_6_8865)">
+            <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white" />
+          </g>
+          <defs>
+            <clipPath id="clip0_6_8865">
+              <rect width="24" height="24" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+        <a href="/voters/add/<%= election.id %>"> Add Voter </a>
+      </div>
+    </div>
+    <div class="flex flex-row w-full">
+      <div class="flex flex-col items-center w-full">
+        <% if (election.state == "running") { %>
+          <div class="flex flex-row flex-nowrap bg-yellow-300 p-4 mb-4 rounded-xl w-4/5 text-gray-600">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_6_8816)">
+              <path d="M15.73 3H8.27L3 8.27V15.73L8.27 21H15.73L21 15.73V8.27L15.73 3ZM12 17.3C11.28 17.3 10.7 16.72 10.7 16C10.7 15.28 11.28 14.7 12 14.7C12.72 14.7 13.3 15.28 13.3 16C13.3 16.72 12.72 17.3 12 17.3ZM13 13H11V7H13V13Z" fill="white"/>
+              </g>
+              <defs>
+              <clipPath id="clip0_6_8816">
+              <rect width="24" height="24" fill="white"/>
+              </clipPath>
+              </defs>
+              </svg>
+              &nbsp;
+            Cannot make changes to a running election
+          </div>
+          <% } %>
+        <h2 class="text-3xl font-bold mb-4">Questions</h2>
+        <% for(var i = 0; i < questions.length; i++) { %>
+        <div class="w-4/5 shadow-xl p-4 my-4 rounded-md bg-purple-200">
+          <h1 class="text-2xl font-bold mb-4"><%= questions[i].title %></h1>
+          <p class="text-lg text-gray-600 mb-4">
+            <%= questions[i].description %>
+          </p>
+          <% for(var j = 0; j < questions[i].Answers.length; j++) { %>
+          <p class="text-lg text-gray-600 mb-4"><span class="font-semibold">Option <%= j+1 %></span> : <%= questions[i].Answers[j].body %></p>
+          <% } %>
+          <a
+            href="/questions/edit/<%= questions[i].id %>"
+            class="bg-blue-400 p-2 rounded m-2 hover:bg-blue-500 cursor-pointer text-white"
+            >Edit</a
+          >
+          <a
+            href="#"
+            onclick="deleteQuestion('<%= questions[i].id %>')"
+            class="bg-red-400 rounded px-1 py-2 hover:bg-red-500 cursor-pointer text-white"
+          >
+            Delete
+          </a>
+        </div>
+        <% } %>
+      </div>
+      <div class="flex flex-col w-1/5">
+        <h2 class="text-3xl font-bold mb-4">Voters</h2>
+        <% for(var i = 0; i < voters.length; i++) { %>
+          <div class="w-4/5 shadow-xl p-4 mt-4 rounded-md bg-pink-200">
+            <h1 class="text-2xl font-bold mb-4"><%= voters[i].firstName + " " + voters[i].lastName %></h1>
+            <p class="text-lg text-gray-600 mb-4">
+              <span class="font-semibold">Voter ID : </span>
+              <%= voters[i].voterID %>
+            </p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>
